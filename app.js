@@ -16,7 +16,7 @@ var isShooting = false;
 var gameOver = false;
 
 // Velocity of player
-var velocity = 0.075;
+var velocity = 0.085;
 
 // Arrays for bullets and enemies on screen
 const bullets = [];
@@ -54,7 +54,7 @@ function updatePosition() {
 const loader = new THREE.TextureLoader();
 
 // Create geometry box for player
-const geometry = new THREE.BoxGeometry(0.6, 0.6, 0);
+const geometry = new THREE.BoxGeometry(0.6, 0.6, 0.0);
 
 // Load player texture
 const material = new THREE.MeshBasicMaterial({
@@ -84,7 +84,7 @@ class Bullet {
         const geometry = new THREE.BoxGeometry(0.1, 0.2, 0);
 
         // Use plain color instead of texture for bullet
-        const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        const material = new THREE.MeshBasicMaterial({ color: 0x0000FF });
 
         // Create mesh for bullet
         this.mesh = new THREE.Mesh(geometry, material);
@@ -123,10 +123,10 @@ class Bullet {
 class Enemy {
     constructor(position) {
         // Create geometry box for enemy
-        const geometry = new THREE.BoxGeometry(0.6, 0.6, 0);
+        const geometry = new THREE.BoxGeometry(0.6, 0.6, 0.6);
 
         // Use plain color instead of texture for enemy 
-        const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        const material = new THREE.MeshBasicMaterial({ color: 0xFF0000 });
 
         // Create mesh for it
         this.mesh = new THREE.Mesh(geometry, material);
@@ -403,8 +403,21 @@ function restartGame() {
     updateScore();
 }
 
+function spawner(){
+    // Spawn always one enemy
+    spawnEnemy();
+
+    // Spawn one more enemy if points >=5
+    if(points>=5)
+        spawnEnemy();
+
+    // Spawn one more enemy if points >=5
+    if(points>=10)
+        spawnEnemy();
+}
+
 // Spawn an enemy every 2 seconds
-setInterval(spawnEnemy, 2000);
+setInterval(spawner, 2000);
 
 handleEvents();
 animate();
