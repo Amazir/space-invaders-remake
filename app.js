@@ -194,23 +194,47 @@ function updateBullets() {
     }
 }
 
+// Update for enemies
 function updateEnemies() {
+    // Loop for every enemies object
     for (let i = enemies.length - 1; i >= 0; i--) {
+        // Enemies movement
         enemies[i].update();
+
+        // Check if enemy is out of screen
         if (enemies[i].isOutOfBounds()) {
+            // Then remove it
             enemies[i].removeFromScene();
+
+            // Remove it from array 
             enemies.splice(i, 1);
+
+            // Subtract one live
             lives--;
+
+            // If lives is 0 then show game over screen
             if (lives <= 0) {
                 gameOver = true;
             }
         } else {
+            // Get enemy box
             const enemyBox = enemies[i].getBoundingBox();
+
+            // get player box
             const playerBox = new THREE.Box3().setFromObject(cube);
+
+            // Check if enemy collides with player
             if (enemyBox.intersectsBox(playerBox)) {
+                // Remove enemy from scene
                 enemies[i].removeFromScene();
+
+                // Remove enemy from array
                 enemies.splice(i, 1);
+
+                // Subtract one live
                 lives--;
+
+                // If lives is 0 then show game over screen
                 if (lives <= 0) {
                     gameOver = true;
                 }
@@ -219,41 +243,55 @@ function updateEnemies() {
     }
 }
 
+// Collision cooldown for bug fixing
 let collisionCooldown = 0; // Dodajemy zmienną do śledzenia odstępu czasu między wykrywaniem kolizji
 
+// Collision check
 function checkCollisions() {
     if (collisionCooldown > 0) {
-        collisionCooldown--; // Zmniejszamy odstęp czasu między sprawdzaniem kolizji
-        return; // Wyjdź z funkcji, jeśli nadal trwa odstęp czasu
+        collisionCooldown--; // Lower cooldown
+        return; // End function is there is cooldown
     }
 
+    // Loop for all bullets
     for (let i = bullets.length - 1; i >= 0; i--) {
+        // Get bullet
         const bullet = bullets[i];
+
+        // Get bullet bounding box
         const bulletBox = bullet.getBoundingBox();
 
+        // Loop for all enemies
         for (let j = enemies.length - 1; j >= 0; j--) {
             const enemy = enemies[j];
             const enemyBoundingBox = enemy.getBoundingBox();
 
-            // Sprawdzanie, czy strzałka jest w obszarze przeciwnika
+            // Check if bullet hits enemy
             if (bulletBox.intersectsBox(enemyBoundingBox)) {
-                console.log("Collision Detected!");
+                // Remove bullet from scene
                 bullet.removeFromScene();
+
+                // Remove enemy from scene
                 enemy.removeFromScene();
+
+                // Remove bullet from array
                 bullets.splice(i, 1);
+
+                // Remove enemy from array
                 enemies.splice(j, 1);
+
+                // Increase points by 1
                 points++;
-                collisionCooldown = 10; // Ustawienie odstępu czasu między wykrywaniem kolizji
-                return; // Wyjdź z funkcji, aby uniknąć dodatkowych sprawdzeń kolizji w tej klatce
+
+                // Set collision cooldown / bugfix
+                collisionCooldown = 10; 
+                return; // Escape function
             }
         }
     }
 }
 
-
-
-
-
+// Tick function for game looping
 function tick() {
     if (!gameOver) {
         updatePosition();
@@ -266,18 +304,21 @@ function tick() {
     }
 }
 
+// Update loop for score
 function updateScore() {
     if(points>highScore)
         highScore = points;
     scoreElement.innerHTML = `Lives: ${lives} Points: ${points}`;
 }
 
+// Animate function for ThreeJS
 function animate() {
     requestAnimationFrame(animate);
     tick();
     renderer.render(scene, camera);
 }
 
+// Keyboard event handling
 function handleEvents() {
     document.onkeydown = function(e) {
         switch (e.keyCode) {
