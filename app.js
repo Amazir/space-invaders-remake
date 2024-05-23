@@ -9,21 +9,27 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
+// Some bools for event handlers
 var isPressingLeft = false;
 var isPressingRight = false;
 var isShooting = false;
 var gameOver = false;
 
+// Velocity of player
 var velocity = 0.075;
+
+// Arrays for bullets and enemies on screen
 const bullets = [];
 const enemies = [];
 
+// Some counters for lives, points and high score.
 let lives = 3;
 let points = 0;
 let highScore = 0;
 
-const minX = -6.5; // minimalna pozycja x w obszarze gry
-const maxX = 6.5;  // maksymalna pozycja x w obszarze gry
+// Max X and max Y for player to move on (ThreeJS scales it with resolution so shouldn't use canvas width and height)
+const minX = -6.5; 
+const maxX = 6.5;  
 
 // Create a score display element
 const scoreElement = document.createElement('div');
@@ -34,6 +40,7 @@ scoreElement.style.color = 'white';
 scoreElement.style.fontSize = '24px';
 document.body.appendChild(scoreElement);
 
+// Function for player movement
 function updatePosition() {
     if (isPressingLeft && cube.position.x > minX) {
         cube.position.x -= velocity;
@@ -43,89 +50,143 @@ function updatePosition() {
     }
 }
 
+// Create new texture loader
 const loader = new THREE.TextureLoader();
 
+// Create geometry box for player
 const geometry = new THREE.BoxGeometry(0.6, 0.6, 0);
+
+// Load player texture
 const material = new THREE.MeshBasicMaterial({
     map: loader.load("./public/textures/player.png"),
     transparent: true
 });
+
+// Load and set game background
 loader.load('./public/textures/background.jpg', function(texture) {
     scene.background = texture;
 });
+
+// Create player
 const cube = new THREE.Mesh(geometry, material);
+
+// Add player to current scene
 scene.add(cube);
+
+// Set player and camera positions
 cube.position.y -= 3.3;
 camera.position.z = 5;
 
+// Class for bullet
 class Bullet {
     constructor(position) {
+        // Geometry box for bullet
         const geometry = new THREE.BoxGeometry(0.1, 0.2, 0);
+
+        // Use plain color instead of texture for bullet
         const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+
+        // Create mesh for bullet
         this.mesh = new THREE.Mesh(geometry, material);
+
+        // Get position of player from arg
         this.mesh.position.copy(position);
+
+        // Move it away from player
         this.mesh.position.y += 0.4;
+
+        // Add bullet to scene
         scene.add(this.mesh);
     }
 
     update() {
+        // Bullet movement
         this.mesh.position.y += 0.2;
     }
 
     isOutOfBounds() {
+        // Check if bullet is out of screen
         return this.mesh.position.y > 10;
     }
 
     removeFromScene() {
+        // Remove it from scene
         scene.remove(this.mesh);
     }
 
     getBoundingBox() {
+        // Getter for bounding box
         return new THREE.Box3().setFromObject(this.mesh);
     }
 }
 
 class Enemy {
     constructor(position) {
+        // Create geometry box for enemy
         const geometry = new THREE.BoxGeometry(0.6, 0.6, 0);
+
+        // Use plain color instead of texture for enemy 
         const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+
+        // Create mesh for it
         this.mesh = new THREE.Mesh(geometry, material);
+
+        // Set position
         this.mesh.position.copy(position);
+
+        // Add it to scene
         scene.add(this.mesh);
     }
 
     update() {
+        // Enemy movement
         this.mesh.position.y -= 0.05;
     }
 
     isOutOfBounds() {
+        // Enemy out of screen
         return this.mesh.position.y < -10;
     }
 
     removeFromScene() {
+        // Remove enemy from scene
         scene.remove(this.mesh);
     }
 
     getBoundingBox() {
+        // Getter for bounding box
         return new THREE.Box3().setFromObject(this.mesh);
     }
 }
 
+// Function for handling shooting
 function shoot() {
+    // Create new bullet
     const bullet = new Bullet(cube.position.clone());
+
+    // Add new bullet to array of bullets
     bullets.push(bullet);
 }
 
 function spawnEnemy() {
+    // Randomize and set enemy position
     const x = Math.random() * (maxX - minX) + minX;
     const position = new THREE.Vector3(x, 10, 0);
+
+    // Create new enemy
     const enemy = new Enemy(position);
+
+    // Add new enemy to array of enemies
     enemies.push(enemy);
 }
 
+// Update for bullets
 function updateBullets() {
     for (let i = bullets.length - 1; i >= 0; i--) {
+        // Bullet movement
         bullets[i].update();
+
+        // If bullet is out of screen remove it from scene and from bullets array
         if (bullets[i].isOutOfBounds()) {
             bullets[i].removeFromScene();
             bullets.splice(i, 1);
